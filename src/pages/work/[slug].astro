@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { artFor } from '../../lib/art.js';
+import Figure from '../../components/Figure.astro';
+import Sidenote from '../../components/Sidenote.astro';
+import Stat from '../../components/Stat.astro';
+import Callout from '../../components/Callout.astro';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('work', ({ data }) => data.kind === 'study' && !data.draft)).sort((a, b) => a.data.order - b.data.order);
+  return entries.map((entry, i) => ({ params: { slug: entry.id }, props: { entry, i, prev: entries[i - 1] ?? null, next: entries[i + 1] ?? null } }));
+}
+const { entry, i, prev, next } = Astro.props;
+const { Content } = await render(entry);
+const art = artFor(entry);
+const d = entry.data;
+const dates = d.end ? `${d.start} → ${d.end}` : `${d.start} → now`;
+const links = Object.entries(d.links) as [string, string][];
+---
+
+<Base title={`${d.title} · Fareess`} description={d.summary}>
+  <div class="wrap page">
+    <div id="study-visual" class="banner" set:html={art.svg} />
+    <article id="study-article" style="margin-top: 1.6rem">
+      <span class="mono eyebrow">Case study {String(i + 1).padStart(2, '0')} · seed {art.seed}</span>
+      <h1 class="big">{d.title}</h1>
+      <div class="pill-row" style="margin-top: 1.1rem">
+        <span class="pill"><span class="k">Role</span>{d.role}</span>
+        {d.org && <span class="pill"><span class="k">Where</span>{d.org}</span>}
+        <span class="pill"><span class="k">When</span>{dates}</span>
+        {d.tools.length > 0 && <span class="pill"><span class="k">Tools</span>{d.tools.join(', ')}</span>}
+        {links.map(([k, v]) => <a class="pill" href={v} target="_blank" rel="noopener"><span class="k">{k}</span>open ↗</a>)}
+      </div>
+      <p class="abstract">{d.summary}</p>
+      <div class="prose">
+        <Content components={{ Figure, Sidenote, Stat, Callout }} />
+      </div>
+      {d.outcomes.length > 0 && (
+        <section class="prose" style="margin-top: 2.2rem">
+          <h2>What actually happened</h2>
+          {d.outcomes.map((o) => <Stat value={o.value} metric={o.metric} basis={o.basis} />)}
+        </section>
+      )}
+      <nav class="study-nav">
+        {prev ? <a href={`/work/${prev.id}/`} data-nav><span class="dir">← Previous</span><span class="t">{prev.data.title}</span></a> : <span></span>}
+        {next && <a href={`/work/${next.id}/`} data-nav style="text-align:right"><span class="dir">Next →</span><span class="t">{next.data.title}</span></a>}
+      </nav>
+    </article>
+
+    <footer class="foot">
+      <a href="/" data-nav class="mono">← Back to the feed</a>
+      <span class="links"><a href="/work/" data-nav>All work</a><button type="button" class="copy-email" data-copy-email style="background:none;border:0;padding:0;font:inherit;color:var(--ink-2);cursor:pointer">Email</button></span>
+    </footer>
+  </div>
+</Base>

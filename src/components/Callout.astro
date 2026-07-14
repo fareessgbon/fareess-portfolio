@@ -1,0 +1,9 @@
+---
+interface Props { kind?: 'method' | 'finding' | 'constraint' }
+const { kind = 'method' } = Astro.props;
+---
+
+<aside class={`callout ${kind}`}>
+  <span class="k">{kind}</span>
+  <slot />
+</aside>

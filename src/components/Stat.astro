@@ -1,0 +1,10 @@
+---
+interface Props { value: string; metric: string; basis: string }
+const { value, metric, basis } = Astro.props;
+---
+
+<div class="stat reveal">
+  <div class="v">{value}</div>
+  <div class="m">{metric}</div>
+  <div class="b">{basis}</div>
+</div>

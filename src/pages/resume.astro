@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Résumé · Fareess">
+  <div class="wrap page">
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap">
+      <div>
+        <span class="mono eyebrow">Résumé</span>
+        <h1 class="big">The paper version.</h1>
+      </div>
+      <button class="btn btn-glass no-print" onclick="window.print()">Print / save PDF</button>
+    </div>
+
+    <div class="sheet" style="margin-top:1.6rem">
+      <h2>Education</h2>
+      <div class="entry">
+        <div><h3>University of Victoria</h3><div class="where">B.Sc. Computer Science and Health Information Science · Victoria, BC</div></div>
+        <div class="when">exp. May 2027</div>
+        <ul><li>Honour Roll (2020–2023) · Alexander Rutherford Scholarship</li><li>ACSA · ColorStack · Rewriting the Code · WECS</li></ul>
+      </div>
+      <h2>Experience</h2>
+      <div class="entry">
+        <div><h3>Founder &amp; CEO · Hush Jewels</h3><div class="where">Calgary, AB</div></div>
+        <div class="when">2020 → now</div>
+        <ul>
+          <li>Created graphics-led campaigns across social platforms, lifting sales conversion.</li>
+          <li>Used demographic and audience analysis to grow sales in targeted segments.</li>
+          <li>Partnered with a retail store to expand reach and margin.</li>
+          <li>Selected for British Vogue's Jewelry Designer Profile.</li>
+        </ul>
+      </div>
+      <div class="entry">
+        <div><h3>Community Events Director · Women in Engineering &amp; Computer Science</h3><div class="where">Victoria, BC</div></div>
+        <div class="when">2024 → now</div>
+        <ul><li>Plan and run community networking events; align projects with club objectives.</li><li>Analyze event metrics and feedback to raise engagement and satisfaction.</li></ul>
+      </div>
+      <div class="entry">
+        <div><h3>Product Designer · CyNocular</h3><div class="where">Dallas, TX (remote)</div></div>
+        <div class="when">Mar → Aug 2022</div>
+        <ul><li>Crafted page layouts with typography, color, and imagery for brand consistency.</li><li>Applied industry design patterns for a secure, coherent user experience.</li><li>Iterated on landing-page usability from user feedback.</li></ul>
+      </div>
+      <h2>Skills</h2>
+      <div class="entry">
+        <div><h3 style="font-size:0.95rem">Tools &amp; strengths</h3></div><div></div>
+        <ul><li>SQL, Oracle Database, Tableau, Excel · Figma, Visual Paradigm, Canva · Notion, Shopify, Microsoft Office</li><li>Product design · Data analysis · Outreach · Product marketing · Customer service</li></ul>
+      </div>
+    </div>
+
+    <footer class="foot"><span class="mono">Victoria, BC</span><span class="links"><a href="/">Home</a><button type="button" class="copy-email" data-copy-email style="background:none;border:0;padding:0;font:inherit;color:var(--ink-2);cursor:pointer">Email</button></span></footer>
+  </div>
+</Base>

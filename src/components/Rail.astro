@@ -1,0 +1,55 @@
+---
+import { avatar, HEART } from '../lib/gallery.js';
+const path = Astro.url.pathname;
+const cur = (h) => (h === '/' ? path === '/' : path.startsWith(h.replace(/\/$/, '')));
+const I = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  doc: '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  sun: '<circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>',
+};
+const nav = [
+  ['/', 'Home', I.home],
+  ['/work/', 'Explore', I.grid],
+  ['/about/', 'About', I.user],
+  ['/resume/', 'Résumé', I.doc],
+];
+---
+
+<header class="mobilenav" aria-label="Mobile navigation">
+  <a href="/" class="mob-brand" aria-label="Home" aria-current={cur('/') ? 'page' : undefined}>
+    <span class="mob-heart" set:html={HEART} />
+  </a>
+  <nav class="mob-actions" aria-label="Quick links">
+    <a href="/work/" aria-label="Explore" aria-current={cur('/work/') ? 'page' : undefined}><svg viewBox="0 0 24 24" set:html={I.grid} /></a>
+    <a href="/about/" aria-label="About" aria-current={cur('/about/') ? 'page' : undefined}><svg viewBox="0 0 24 24" set:html={I.user} /></a>
+    <button type="button" id="mob-search" aria-label="Search"><svg viewBox="0 0 24 24" set:html={I.search} /></button>
+    <button type="button" class="copy-email" data-copy-email aria-label="Copy email"><svg viewBox="0 0 24 24" set:html={I.mail} /></button>
+    <button type="button" id="mob-mode" aria-label="Toggle theme"><svg viewBox="0 0 24 24" set:html={I.sun} /></button>
+  </nav>
+</header>
+
+<nav class="rail" aria-label="Primary">
+  <a href="/" class="brand-mark" aria-label="Home">
+    <span class="brand-heart" set:html={HEART} />
+  </a>
+  {nav.map(([h, label, icon]) => (
+    <a href={h} class="rail-btn" aria-current={cur(h) ? 'page' : undefined}><svg viewBox="0 0 24 24" set:html={icon} /><span class="tip">{label}</span></a>
+  ))}
+  <button type="button" class="rail-btn copy-email" data-copy-email aria-label="Copy email"><svg viewBox="0 0 24 24" set:html={I.mail} /><span class="tip">Copy email</span></button>
+  <button type="button" class="rail-btn" id="rail-search" aria-label="Search"><svg viewBox="0 0 24 24" set:html={I.search} /><span class="tip">Search · ⌘K</span></button>
+  <span class="spacer"></span>
+  <button type="button" class="rail-btn" id="rail-mode" aria-label="Toggle theme"><svg viewBox="0 0 24 24" set:html={I.sun} /><span class="tip">Theme</span></button>
+  <a href="/about/" class="rail-avatar" aria-label="About"><img src={avatar} alt="Fareess" /></a>
+</nav>
+
+<nav class="tabbar" aria-label="Primary mobile">
+  <a href="/" aria-current={cur('/') ? 'page' : undefined} aria-label="Home"><svg viewBox="0 0 24 24" set:html={I.home} /></a>
+  <a href="/work/" aria-current={cur('/work/') ? 'page' : undefined} aria-label="Explore"><svg viewBox="0 0 24 24" set:html={I.grid} /></a>
+  <button type="button" id="tab-search" aria-label="Search"><svg viewBox="0 0 24 24" set:html={I.search} /></button>
+  <button type="button" class="copy-email" data-copy-email aria-label="Copy email"><svg viewBox="0 0 24 24" set:html={I.mail} /></button>
+  <a href="/about/" class="tab-avatar" aria-label="About"><img src={avatar} alt="Fareess" /></a>
+</nav>

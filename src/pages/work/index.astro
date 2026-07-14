@@ -1,0 +1,77 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { artFor } from '../../lib/art.js';
+import { explorePhotos, HEART } from '../../lib/gallery.js';
+
+const projects = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+const first = (s) => s.split('. ')[0].replace(/\.$/, '') + '.';
+const coverFor = { 'hush-jewels': '/photos/gold_hoops_jewelry_collection.jpg' };
+const P = projects.map((e) => ({ t: 'project', e }));
+const PH = explorePhotos.map((p, i) => ({ t: 'photo', p, i }));
+const order = [P[0], P[1], PH[0], P[2], PH[1], P[3], PH[2], P[4], PH[3], P[5], PH[4]];
+const heart = HEART;
+---
+
+<Base title="Explore · Fareess">
+  <div class="wrap page">
+    <span class="mono eyebrow reveal">The board</span>
+    <h1 class="big reveal" style="--rd:60ms">Everything, in one place.</h1>
+    <p class="reveal" style="--rd:120ms; color:var(--ink-2); max-width:56ch; margin-top:0.9rem">
+      Case studies, experiments, and the brand that started it all. Tap any project to read it
+      without leaving the board. The generative covers are drawn from each project's own data.
+    </p>
+
+    <div class="toolbar">
+      <div class="chips" role="group" aria-label="Filter">
+        {['all', 'projects', 'design', 'data', 'ops', 'jewelry'].map((t, i) => (
+          <button data-tag={t} aria-pressed={i === 0 ? 'true' : 'false'}>{t === 'all' ? 'All' : t}</button>
+        ))}
+      </div>
+      <button class="search" id="toolbar-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="search-label">Search</span> <kbd>⌘K</kbd></button>
+    </div>
+
+    <div class="feed" id="feed">
+      {order.map((it) => {
+        if (it && it.t === 'project') {
+          const e = it.e;
+          const tags = `projects ${e.data.tags.join(' ')}`;
+          const cover = coverFor[e.id];
+          const body = (
+            <>
+              <button class="heart" aria-label="Like" set:html={heart} />
+              <span class="badge">{e.data.kind === 'link' ? 'Project ↗' : 'Case study'}</span>
+              {cover ? <span class="art"><img src={cover} alt={e.data.title} style="width:100%;height:100%;object-fit:cover" /></span> : <span class="art" set:html={artFor(e).svg} />}
+              <span class="pbody"><h3>{e.data.title}</h3><p>{first(e.data.summary)}</p><span class="chip-row">{e.data.tags.slice(0,3).map((t)=><span class="chip">{t}</span>)}</span></span>
+            </>
+          );
+          return e.data.kind === 'link'
+            ? <a class="tile tile-project" href={e.data.links.github} target="_blank" rel="noopener" data-id={e.id} data-tags={tags}>{body}</a>
+            : <div class="tile tile-project" data-slug={e.id} data-id={e.id} data-tags={tags} role="button" tabindex="0">{body}</div>;
+        }
+        if (it && it.t === 'photo') {
+          const p = it.p;
+          return (
+            <div class="tile tile-photo" data-id={p.src} data-tags="jewelry" data-full={p.src} data-alt={p.alt} data-cap={p.tag} role="button" tabindex="0">
+              <button class="heart" aria-label="Like" set:html={heart} />
+              <span class="badge">{p.tag}</span>
+              <img src={p.src} alt={p.alt} loading="lazy" />
+              <span class="ov"><span class="cap">{p.alt}</span></span>
+            </div>
+          );
+        }
+      })}
+    </div>
+
+    <footer class="foot"><span class="mono">Every number here is real · Victoria, BC</span><span class="links"><a href="/">Home</a><a href="/colophon/">Colophon</a></span></footer>
+  </div>
+
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      document.getElementById('toolbar-search')?.addEventListener('click', () => {
+        const p = document.getElementById('palette') as HTMLDialogElement;
+        if (p && !p.open) { p.showModal(); (p.querySelector('input') as HTMLInputElement)?.focus(); }
+      });
+    });
+  </script>
+</Base>

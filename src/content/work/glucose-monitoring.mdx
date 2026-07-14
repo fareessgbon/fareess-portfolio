@@ -1,0 +1,87 @@
+---
+title: "Glucose Monitoring Prototype"
+summary: "A glucose monitoring app prototype designed to clinical accessibility standards. Auth flows, core journeys, and a reading screen built for someone who checks it twelve times a day and deserves better than a dashboard."
+org: "Independent, health informatics"
+role: "Product designer"
+start: "2024-01"
+end: "2024-04"
+tags: [design, health]
+tools: [Figma, HCI, Data flows]
+links:
+  github: "https://github.com/fareess"
+kind: study
+featured: true
+order: 1
+outcomes:
+  - metric: "Core flow completion"
+    value: "Qualitative"
+    basis: "Design walkthroughs of the authentication and logging journeys. Formal usability testing is the planned next phase."
+---
+
+## The problem
+
+A person managing diabetes checks their glucose more often than they check the
+weather. That reading is not a dashboard problem, it's a companionship problem.
+
+<Sidenote n={1}>My design bar for this project: a reading should be legible from
+arm's length, at night, by someone who has already done this twelve times today.</Sidenote>
+
+Most consumer glucose apps borrow their visual language from fitness trackers:
+celebratory, gamified, loud. Clinical tools swing the other way, dense and cold
+and built for the clinician instead of the patient. I wanted to find out what
+lives in between, a design with consumer-grade warmth that takes clinical
+accessibility standards completely seriously.
+
+## The constraints
+
+<Callout kind="constraint">
+No real patient data was available, so every screen was designed against
+realistic synthetic ranges (mmol/L, the Canadian convention). Solo designer, no
+engineering partner, Figma prototype only.
+</Callout>
+
+Working without real data turned out to be a gift. It forced me to design for
+every state honestly instead of cherry-picking happy paths. Hypoglycemic
+readings, sensor gaps, and stale data all got first-class visual treatment,
+because in real life those are the moments that matter most.
+
+## How I worked
+
+The project moved through three passes:
+
+1. **Authentication and onboarding.** Health data is regulated data. I mapped
+   the sign-in flow around token-based authentication patterns and explicit
+   consent screens before touching any visual design.
+2. **Core journeys.** Log a reading, review a trend, share with a clinician.
+   Each journey got flowcharted, prototyped, and walked end to end.
+3. **The reading itself.** Color is never the only signal. Every glucose state
+   pairs color with position, text, and shape, so the interface survives
+   color-vision deficiency and 2 a.m. screen dimness.
+
+<Figure n="1.1" caption="Every reading pairs color with a second channel, so no state depends on color alone">
+<svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A glucose trend line with labeled high and low zones">
+  <line x1="20" y1="35" x2="540" y2="35" stroke="var(--line-strong)" stroke-width="1"/>
+  <line x1="20" y1="115" x2="540" y2="115" stroke="var(--line-strong)" stroke-width="1"/>
+  <text x="24" y="28" font-family="var(--mono)" font-size="9" fill="var(--text-3)">HIGH · 10.0 MMOL/L</text>
+  <text x="24" y="130" font-family="var(--mono)" font-size="9" fill="var(--text-3)">LOW · 4.0 MMOL/L</text>
+  <path d="M 30 80 Q 90 60, 140 72 T 250 58 T 360 96 T 470 70 L 530 76" fill="none" stroke="var(--violet)" stroke-width="1.8"/>
+  <circle cx="360" cy="96" r="4.5" fill="var(--pink)"/>
+  <text x="372" y="100" font-family="var(--mono)" font-size="9" fill="var(--pink)">4.8 ↓ FALLING</text>
+</svg>
+</Figure>
+
+## What I learned
+
+The most consequential decision was the smallest one: the trend arrow. People
+who use these apps describe reacting to numbers but deciding based on
+direction. So I gave direction equal visual weight with the reading itself,
+arrow, verb, and color moving as one unit. That single change reorganized the
+whole home screen around the only question that matters: what should I do in
+the next twenty minutes?
+
+## Where it goes next
+
+This is a prototype and it says so plainly. The honest next step is moderated
+usability testing with people who actually manage diabetes. Everything above is
+a hypothesis with good reasoning behind it, not a validated result. Knowing the
+difference between the two is the discipline I care most about.

@@ -1,0 +1,305 @@
+---
+import { getCollection } from 'astro:content';
+import { HEART } from '../lib/gallery.js';
+import { EMAIL } from '../lib/email.js';
+const studies = (await getCollection('work', ({ data }) => data.kind === 'study' && !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const links = [
+  ['~', 'Home', '/', 'page'],
+  ['01', 'Explore the work', '/work/', 'page'],
+  ['02', 'About Fareess', '/about/', 'page'],
+  ['03', 'Résumé', '/resume/', 'page'],
+  ['04', 'Behind the build', '/colophon/', 'page'],
+  ['@', `Copy ${EMAIL}`, '#copy-email', 'action'],
+];
+---
+
+<div id="burst-layer" aria-hidden="true"></div>
+<div class="toast" id="app-toast" role="status" aria-live="polite"></div>
+
+<dialog class="post-modal-dialog" id="post-modal">
+  <div class="post-modal">
+    <div class="pm-visual" id="pm-visual"></div>
+    <div class="pm-scroll" id="pm-scroll"></div>
+  </div>
+</dialog>
+<button class="modal-close" id="pm-close" aria-label="Close" hidden><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+<button class="modal-nav prev" id="pm-prev" aria-label="Previous" hidden><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+<button class="modal-nav next" id="pm-next" aria-label="Next" hidden><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+
+<dialog class="lightbox-dialog" id="lightbox">
+  <div class="lightbox"><img id="lb-img" src="" alt="" /><div class="lb-cap" id="lb-cap"></div></div>
+</dialog>
+
+<dialog class="palette" id="palette">
+  <div class="head mono"><span>Search & jump</span><span>esc</span></div>
+  <input type="text" placeholder="Find a project or page…" aria-label="Search" autocomplete="off" />
+  <ul>
+    {links.map(([k, t, href, s]) => (
+      <li><a href={href} data-nav={href !== '#copy-email' ? '' : undefined} data-copy-email={href === '#copy-email' ? '' : undefined}><span class="k">{k}</span><span class="t">{t}</span><span class="s">{s}</span></a></li>
+    ))}
+    {studies.map((p, i) => (
+      <li><a href={`/work/${p.id}/`} data-nav><span class="k">{String(i + 1).padStart(2, '0')}</span><span class="t">{p.data.title}</span><span class="s">project</span></a></li>
+    ))}
+  </ul>
+</dialog>
+
+<script>
+  import { HEART } from '../lib/gallery.js';
+  import { EMAIL } from '../lib/email.js';
+
+  function openDialog(d) { if (d && !d.open) d.showModal(); }
+
+  function showToast(msg: string) {
+    const t = document.getElementById('app-toast');
+    if (!t) return;
+    t.innerHTML = `<span class="tk"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 6"/></svg></span>${msg}`;
+    t.classList.add('show');
+    clearTimeout((t as any)._t);
+    (t as any)._t = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  function copyEmail(e?: Event) {
+    e?.preventDefault();
+    navigator.clipboard.writeText(EMAIL).then(() => showToast(`${EMAIL} copied`)).catch(() => showToast(EMAIL));
+  }
+
+  function initApp() {
+    document.querySelectorAll('.copy-email, [data-copy-email]').forEach((el) => {
+      el.addEventListener('click', (e) => { e.preventDefault(); copyEmail(e); });
+    });
+    /* reveal tiles + prose */
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }, { rootMargin: '0px 0px -6% 0px' });
+    document.querySelectorAll('.tile, .reveal').forEach((el) => io.observe(el));
+
+    /* likes: persisted locally, personal not social */
+    let liked = new Set();
+    try { liked = new Set(JSON.parse(localStorage.getItem('liked') || '[]')); } catch {}
+    const saveLiked = () => localStorage.setItem('liked', JSON.stringify([...liked]));
+    document.querySelectorAll('.tile').forEach((tile) => {
+      const id = (tile as HTMLElement).dataset.id;
+      const heart = tile.querySelector('.heart') as HTMLElement | null;
+      if (id && liked.has(id)) heart?.classList.add('liked');
+      heart?.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (!id) return;
+        if (liked.has(id)) { liked.delete(id); heart.classList.remove('liked'); }
+        else { liked.add(id); heart.classList.add('liked'); burstAt(heart); }
+        saveLiked();
+      });
+      let last = 0;
+      tile.addEventListener('pointerdown', (e) => {
+        const now = Date.now();
+        if (now - last < 320 && id) {
+          liked.add(id); heart?.classList.add('liked'); saveLiked();
+          burstAt(null, (e as PointerEvent).clientX, (e as PointerEvent).clientY);
+        }
+        last = now;
+      });
+      if ((tile as HTMLElement).getAttribute('role') === 'button') {
+        tile.addEventListener('keydown', (e) => {
+          const k = (e as KeyboardEvent).key;
+          if (k === 'Enter' || k === ' ') { e.preventDefault(); (tile as HTMLElement).click(); }
+        });
+      }
+    });
+    function burstAt(el: HTMLElement | null, px?: number, py?: number) {
+      let x = px, y = py;
+      if (el) { const r = el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
+      const b = document.createElement('div');
+      b.className = 'burst'; b.style.left = x + 'px'; b.style.top = y + 'px';
+      b.innerHTML = HEART;
+      document.getElementById('burst-layer')?.appendChild(b);
+      setTimeout(() => b.remove(), 720);
+    }
+
+    /* balanced masonry (shortest-column packing) */
+    const feed = document.getElementById('feed');
+    let layout = () => {};
+    if (feed) {
+      const gapv = parseInt(getComputedStyle(feed).getPropertyValue('--gap')) || 18;
+      feed.classList.add('laid');
+      layout = () => {
+        const tiles = Array.from(feed.querySelectorAll<HTMLElement>('.tile')).filter((t) => !t.hidden);
+        const W = feed.clientWidth;
+        const cols = Math.min(3, Math.max(2, Math.floor((W + gapv) / (240 + gapv))));
+        const colW = (W - gapv * (cols - 1)) / cols;
+        const h = new Array(cols).fill(0);
+        for (const t of tiles) {
+          t.style.width = colW + 'px';
+          t.style.position = 'absolute';
+          const c = h.indexOf(Math.min(...h));
+          t.style.left = c * (colW + gapv) + 'px';
+          t.style.top = h[c] + 'px';
+          h[c] += t.offsetHeight + gapv;
+        }
+        feed.style.height = Math.max(0, Math.max(...h) - gapv) + 'px';
+      };
+      feed.querySelectorAll('img').forEach((img) => {
+        const el = img as HTMLImageElement;
+        if (!el.complete) el.addEventListener('load', () => layout(), { once: true });
+      });
+      if ('ResizeObserver' in window) new ResizeObserver(() => layout()).observe(feed);
+      addEventListener('resize', () => layout());
+      layout();
+      setTimeout(layout, 250);
+    }
+
+    /* filters */
+    const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chips button'));
+    if (chips.length && feed) {
+      const tiles = Array.from(feed.querySelectorAll<HTMLElement>('.tile'));
+      chips.forEach((c) => c.addEventListener('click', () => {
+        chips.forEach((x) => x.setAttribute('aria-pressed', String(x === c)));
+        const tag = c.dataset.tag!;
+        tiles.forEach((t) => { t.hidden = tag !== 'all' && !(t.dataset.tags || '').split(' ').includes(tag); });
+        layout();
+      }));
+    }
+
+    /* photo lightbox */
+    const lb = document.getElementById('lightbox') as HTMLDialogElement;
+    const lbImg = document.getElementById('lb-img') as HTMLImageElement;
+    const lbCap = document.getElementById('lb-cap')!;
+    document.querySelectorAll<HTMLElement>('.tile-photo').forEach((t) => {
+      t.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.heart')) return;
+        lbImg.src = t.dataset.full || ''; lbImg.alt = t.dataset.alt || '';
+        lbCap.innerHTML = (t.dataset.cap || '') + ' · <a href="/work/hush-jewels/" data-nav>See the Hush Jewels story →</a>';
+        openDialog(lb);
+      });
+    });
+    lb?.addEventListener('click', (e) => { if (e.target === lb) lb.close(); });
+
+    /* post modal (project case studies, opened over the feed) */
+    const pm = document.getElementById('post-modal') as HTMLDialogElement;
+    const pmVisual = document.getElementById('pm-visual')!;
+    const pmScroll = document.getElementById('pm-scroll')!;
+    const closeBtn = document.getElementById('pm-close')!;
+    const prevBtn = document.getElementById('pm-prev')!;
+    const nextBtn = document.getElementById('pm-next')!;
+    const projects = Array.from(document.querySelectorAll<HTMLElement>('[data-slug]')).map((el) => el.dataset.slug!);
+    const uniqueProjects = [...new Set(projects)];
+    let cur = -1;
+
+    async function loadPost(slug: string, push = true) {
+      const href = `/work/${slug}/`;
+      try {
+        const res = await fetch(href);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const art = doc.getElementById('study-article');
+        const vis = doc.getElementById('study-visual');
+        if (!art) { location.href = href; return; }
+        pmScroll.innerHTML = art.innerHTML;
+        pmVisual.innerHTML = vis ? vis.innerHTML : '';
+        pmScroll.scrollTop = 0;
+        cur = uniqueProjects.indexOf(slug);
+        [closeBtn, prevBtn, nextBtn].forEach((b) => (b.hidden = false));
+        prevBtn.hidden = cur <= 0;
+        nextBtn.hidden = cur >= uniqueProjects.length - 1;
+        openDialog(pm);
+        if (push) history.pushState({ post: slug }, '', href);
+      } catch { location.href = href; }
+    }
+    function closePost() { if (pm.open) pm.close(); [closeBtn, prevBtn, nextBtn].forEach((b) => (b.hidden = true)); }
+    document.querySelectorAll<HTMLElement>('.tile-project[data-slug]').forEach((t) => {
+      t.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.heart')) return;
+        e.preventDefault(); loadPost(t.dataset.slug!);
+      });
+    });
+    closeBtn.addEventListener('click', () => { closePost(); history.pushState({}, '', '/'); });
+    prevBtn.addEventListener('click', () => cur > 0 && loadPost(uniqueProjects[cur - 1]));
+    nextBtn.addEventListener('click', () => cur < uniqueProjects.length - 1 && loadPost(uniqueProjects[cur + 1]));
+    pm.addEventListener('click', (e) => { if (e.target === pm) { closePost(); history.pushState({}, '', '/'); } });
+    pm.addEventListener('close', () => [closeBtn, prevBtn, nextBtn].forEach((b) => (b.hidden = true)));
+
+    /* stories */
+    document.querySelectorAll<HTMLElement>('[data-story]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const d = document.getElementById('story-' + btn.dataset.story) as HTMLDialogElement | null;
+        if (d) { openDialog(d); runStory(d); }
+      });
+    });
+
+    /* command palette */
+    const pal = document.getElementById('palette') as HTMLDialogElement;
+    const input = pal.querySelector('input') as HTMLInputElement;
+    const items = Array.from(pal.querySelectorAll('li'));
+    let sel = 0;
+    const vis = () => items.filter((li) => !li.hidden);
+    const paint = () => { items.forEach((li) => li.classList.remove('sel')); const v = vis(); if (v.length) v[Math.min(sel, v.length - 1)].classList.add('sel'); };
+    input.addEventListener('input', () => { const q = input.value.toLowerCase(); items.forEach((li) => (li.hidden = !(li.textContent || '').toLowerCase().includes(q))); sel = 0; paint(); });
+    pal.addEventListener('keydown', (e) => {
+      const v = vis();
+      if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, v.length - 1); paint(); e.preventDefault(); }
+      if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); paint(); e.preventDefault(); }
+      if (e.key === 'Enter') {
+        const a = v[Math.min(sel, v.length - 1)]?.querySelector('a') as HTMLAnchorElement;
+        if (a) {
+          pal.close();
+          if (a.hasAttribute('data-copy-email')) copyEmail();
+          else location.href = a.href;
+        }
+        e.preventDefault();
+      }
+    });
+    pal.addEventListener('click', (e) => { if (e.target === pal) pal.close(); });
+    pal.addEventListener('close', () => { input.value = ''; items.forEach((li) => (li.hidden = false)); sel = 0; paint(); });
+    const openPal = () => { openDialog(pal); input.focus(); };
+    document.getElementById('rail-search')?.addEventListener('click', openPal);
+    document.getElementById('tab-search')?.addEventListener('click', openPal);
+    document.getElementById('mob-search')?.addEventListener('click', openPal);
+
+    const toggleMode = (ev: Event) => {
+      const next = document.documentElement.dataset.mode === 'dark' ? 'light' : 'dark';
+      const apply = () => { if (next === 'dark') document.documentElement.dataset.mode = 'dark'; else delete document.documentElement.dataset.mode; localStorage.setItem('mode', next); window.dispatchEvent(new CustomEvent('modechange')); };
+      const d = document as any;
+      if (!d.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return apply();
+      const x = (ev as MouseEvent).clientX, y = (ev as MouseEvent).clientY;
+      const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+      d.startViewTransition(apply).ready.then(() => document.documentElement.animate({ clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] }, { duration: 520, easing: 'cubic-bezier(0.2,0,0,1)', pseudoElement: '::view-transition-new(root)' }));
+    };
+    document.getElementById('rail-mode')?.addEventListener('click', toggleMode);
+    document.getElementById('mob-mode')?.addEventListener('click', toggleMode);
+
+    /* global keys */
+    document.onkeydown = (e) => {
+      const t = e.target as HTMLElement;
+      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); openPal(); }
+      if (e.key === 'ArrowLeft' && pm.open && !prevBtn.hidden) (prevBtn as HTMLButtonElement).click();
+      if (e.key === 'ArrowRight' && pm.open && !nextBtn.hidden) (nextBtn as HTMLButtonElement).click();
+    };
+
+    /* intercept in-dialog nav links */
+    document.querySelectorAll('[data-nav]').forEach((a) => a.addEventListener('click', () => { document.querySelectorAll('dialog[open]').forEach((d) => (d as HTMLDialogElement).close()); }));
+
+    addEventListener('popstate', (e) => { const s = (e.state && (e.state as any).post); if (s) loadPost(s, false); else closePost(); });
+  }
+
+  let storyTimer: any;
+  function runStory(d: HTMLElement) {
+    const slides = Array.from(d.querySelectorAll<HTMLElement>('.slide'));
+    const bars = Array.from(d.querySelectorAll<HTMLElement>('.bars i'));
+    let i = 0;
+    const show = (n: number) => {
+      if (n < 0) return; if (n >= slides.length) { (d as HTMLDialogElement).close(); return; }
+      i = n;
+      slides.forEach((s, k) => s.classList.toggle('on', k === i));
+      bars.forEach((b, k) => { b.classList.toggle('done', k < i); b.classList.toggle('active', k === i); });
+      clearTimeout(storyTimer); storyTimer = setTimeout(() => show(i + 1), 5000);
+    };
+    d.querySelectorAll('.tap.left').forEach((t) => (t as HTMLElement).onclick = () => show(i - 1));
+    d.querySelectorAll('.tap.right').forEach((t) => (t as HTMLElement).onclick = () => show(i + 1));
+    (d.querySelector('.sclose') as HTMLElement).onclick = () => (d as HTMLDialogElement).close();
+    d.addEventListener('close', () => clearTimeout(storyTimer), { once: true });
+    show(0);
+  }
+
+  document.addEventListener('astro:page-load', initApp);
+</script>

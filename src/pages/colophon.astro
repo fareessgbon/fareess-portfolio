@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { artFor } from '../lib/art.js';
+const entries = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+const words = entries.reduce((s, e) => s + (e.body ? e.body.split(/\s+/).filter(Boolean).length : 0), 0);
+const built = new Date().toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' });
+const seeds = entries.map((e) => ({ title: e.data.title, ...artFor(e) }));
+---
+
+<Base title="Behind the build · Fareess">
+  <div class="wrap page">
+    <span class="mono eyebrow">Behind the build</span>
+    <h1 class="big">Yes, I sweat <span class="grad-text">the details</span>.</h1>
+
+    <div class="prose" style="margin-top:1.8rem">
+      <h2>It's a web app, not a page</h2>
+      <p>This portfolio is built like a product: a persistent app shell with a left rail, a Pinterest-style board you can filter instantly, an Instagram-style profile, story highlights you can tap through, and case studies that open in a modal without ever leaving the feed. Press <code>⌘K</code> or <code>/</code> to jump anywhere.</p>
+
+      <h2>The one rule</h2>
+      <p>Every number here is real. Dates come from the work, the word count below is computed at build time, and metrics in case studies state their source or are called qualitative. If a project file claims a statistic without a source, the site refuses to build.</p>
+
+      <h2>The imagery</h2>
+      <p>The photographs are real Hush Jewels product and campaign shots. Where a project has no photo, its cover is generated from its own metadata: a hash of the title, date, and tags picks every color and the gold thread through it. Same project, same art, forever. Current seeds:</p>
+      <table>
+        <thead><tr><th>Project</th><th>Family</th><th>Seed</th></tr></thead>
+        <tbody>{seeds.map((s) => <tr><td>{s.title}</td><td class="mono" style="font-size:0.72rem">{s.family}</td><td class="mono" style="font-size:0.72rem">{s.seed}</td></tr>)}</tbody>
+      </table>
+
+      <h2>The craft</h2>
+      <p>Warm gallery white with a single gold accent, borrowed from the Hush Jewels palette. Display type is <a href="https://fonts.google.com/specimen/Cormorant+Garamond">Cormorant Garamond</a>, body is <a href="https://fonts.google.com/specimen/Instrument+Sans">Instrument Sans</a>, and data is <a href="https://fonts.google.com/specimen/IBM+Plex+Mono">IBM Plex Mono</a> with slashed zeros. Built with Astro; content lives as markdown in one folder, validated against a schema. Likes are stored on your device only, never as a fake public count.</p>
+
+      <h2>Details worth finding</h2>
+      <ul>
+        <li>Double-tap any tile to like it, jewelry-app style.</li>
+        <li>Tap a story highlight on the home profile.</li>
+        <li>Use the theme button in the rail; the change pours across the page.</li>
+        <li>Select any text.</li>
+      </ul>
+
+      <p class="mono" style="font-size:0.72rem; color:var(--ink-3); border-top:1px solid var(--border); padding-top:1rem; margin-top:2.2rem">This build · {built} · {entries.length} projects · {words.toLocaleString()} words</p>
+    </div>
+
+    <footer class="foot"><span class="mono">Victoria, BC</span><span class="links"><a href="/">Home</a><a href="/work/">Explore</a></span></footer>
+  </div>
+</Base>
