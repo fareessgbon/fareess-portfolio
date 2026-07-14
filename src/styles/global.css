@@ -530,3 +530,48 @@ dialog::backdrop { background: rgba(16, 13, 8, 0.62); backdrop-filter: blur(6px)
   .card, .sheet, .abstract, .note, .stat, .callout, .figure { background: #fff; border-color: #ddd; box-shadow: none; }
   .grad-text, .stat .v { -webkit-text-fill-color: #1a1712; color: #1a1712; background: none; }
 }
+/* Planted Souls project gallery */
+.project-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.project-shot {
+  margin: 0;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.project-shot--wide {
+  grid-column: 1 / -1;
+}
+
+.project-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.project-shot figcaption {
+  padding: 0.75rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 700px) {
+  .project-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .project-shot--wide {
+    grid-column: auto;
+  }
+}
