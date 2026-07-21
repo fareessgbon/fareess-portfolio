@@ -1,0 +1,82 @@
+---
+title: "Newsletter"
+summary: "A high-fidelity website concept and visual direction for Planted Souls, created in Figma with the founder from early brand alignment through a clearer navigation and service experience."
+org: "Kerecis"
+role: "Designer"
+start: "2026-07"
+end: "2026-07"
+tags: [design]
+tools: [Figma, Canva]
+kind: study
+featured: false
+order: 5
+---
+
+## The brief
+
+The Clinical Courier is a weekly educational newsletter for Kerecis sales
+representatives. I created a sample issue to explore how clinical research,
+training updates, and reminders could be presented more clearly.
+
+## How it went
+
+Structure first. I organized the newsletter into three repeatable sections:
+Number of the Week, The Healing Edit, and Stay Up to Date.
+
+Then the visuals. I used Figma, branded typography, imagery, and data
+visualization to make the content easier to scan.
+
+Then the research. I translated findings from a 465-patient study into a
+simple comparison of average hospital length of stay.
+
+<Callout kind="method"> The goal was not only to design one issue, but to create a structure that could support future newsletters. </Callout>
+
+## Final Product
+
+<div class="project-gallery project-gallery--planted">
+  <figure class="project-shot project-shot--wide">
+    <img
+      src="/photos/planted-souls/residential-hero.png"
+      alt="Planted Souls residential plant design landing page with a plant-filled living room, service description, and get started button"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>Residential plant design landing page</figcaption>
+  </figure>
+
+  <figure class="project-shot">
+    <img
+      src="/photos/planted-souls/about-hero.png"
+      alt="Planted Souls About Us page with warm yellow background, green typography, and a rounded plant lifestyle photograph"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>About page and brand messaging</figcaption>
+  </figure>
+
+  <figure class="project-shot">
+    <img
+      src="/photos/planted-souls/services.png"
+      alt="Planted Souls service section presenting plant design and plant event offerings in a two-column layout"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>Service pathways for design and events</figcaption>
+  </figure>
+
+  <figure class="project-shot project-shot--wide">
+    <img
+      src="/photos/planted-souls/process.png"
+      alt="Planted Souls process page showing consultation, installation, and maintenance as three numbered steps"
+      loading="lazy"
+      decoding="async"
+    />
+    <figcaption>Three-step residential design process</figcaption>
+  </figure>
+</div>
+
+## What stuck with me
+
+Small-client work is a masterclass in listening. The CEO knew the brand better
+than I ever could. My job was building the instrument that let that knowledge
+become a website.
